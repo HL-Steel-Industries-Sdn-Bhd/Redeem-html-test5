@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reward Redemption</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+            color: #2c3e50;
+            transition: transform 0.3s ease;
+        }
+
+        .back-button:hover {
+            transform: scale(1.1);
+        }
+
+        .page-title {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 200px;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        /* Rewards Grid */
+        .rewards-grid {
+            display: grid;
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        /* Portrait (Mobile) - 2 columns */
+        @media (orientation: portrait) {
+            .rewards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Landscape (Desktop) - 8 columns */
+        @media (orientation: landscape) {
+            .rewards-grid {
+                grid-template-columns: repeat(8, 1fr);
+                max-height: 60vh;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+            
+            .rewards-grid::-webkit-scrollbar {
+                width: 8px;
+            }
+            
+            .rewards-grid::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+            }
+            
+            .rewards-grid::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 10px;
+            }
+        }
+
+        /* Reward Card */
+        .reward-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .reward-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .points-required {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #e74c3c;
+            padding: 8px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .reward-image {
+            width: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+        }
+
+        .reward-image img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .reward-name {
+            height: 60px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            line-height: 1.3;
+            overflow: hidden;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .quantity-btn:hover:not(:disabled) {
+            background: #2980b9;
+        }
+
+        .quantity-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .quantity-input {
+            width: 40px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            color: #2c3e50;
+        }
+
+        .point-required {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            padding: 5px;
+            border-top: 1px solid #eee;
+        }
+
+        .point-required span {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .redeem-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .redeem-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .redeem-btn:hover::before {
+            left: 100%;
+        }
+
+        .redeem-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .redeem-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .redeem-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .redeem-btn.redeeming {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.yes {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .modal-btn.no {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hidden Forms */
+        .hidden-form {
+            display: none;
+        }
+
+        /* Loading */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .user-info {
+                flex-direction: row;
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .info-box {
+                flex: 1;
+                max-width: 200px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .rewards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .reward-name {
+                height: auto;
+                min-height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading -->
+    <div id="loading" class="loading">Loading rewards...</div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <h3>Confirm Redemption</h3>
+            <p>Are you sure you want to redeem <span id="confirmItem"></span>?</p>
+            <p>This will consume <span id="confirmPoints"></span> points.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn yes" onclick="confirmRedeem()">Yes</button>
+                <button class="modal-btn no" onclick="closeModal()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Forms -->
+    <form id="redeemForm" class="hidden-form" action="https://script.google.com/macros/s/AKfycby27kfUz5aafx4_gdgQ64sv7Ng-cmpo50JlfU-KtTgPtj5hSuxPShKws-xhJ1rmLRYxlQ/exec" method="POST">
+        <input type="hidden" name="action" value="redeem">
+        <input type="hidden" name="name" id="redeemName">
+        <input type="hidden" name="reward" id="redeemReward">
+        <input type="hidden" name="quantity" id="redeemQuantity">
+        <input type="hidden" name="points" id="redeemPoints">
+    </form>
+
+    <form id="getUserDataForm" class="hidden-form" action="https://script.google.com/macros/s/AKfycby27kfUz5aafx4_gdgQ64sv7Ng-cmpo50JlfU-KtTgPtj5hSuxPShKws-xhJ1rmLRYxlQ/exec" method="GET">
+        <input type="hidden" name="action" value="getUserData">
+        <input type="hidden" name="name" id="userName">
+    </form>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <button class="back-button" onclick="goBack()">
+                ←
+            </button>
+            <div class="page-title">Reward Redemption</div>
+            <div class="user-info">
+                <div class="info-box">
+                    <div class="info-label">User</div>
+                    <div class="info-value" id="currentUser">Loading...</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-label">Remaining Points</div>
+                    <div class="info-value" id="currentPoints">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rewards Grid -->
+        <div class="rewards-grid" id="rewardsGrid">
+            <!-- Rewards will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            gasWebAppUrl: 'https://script.google.com/macros/s/AKfycby27kfUz5aafx4_gdgQ64sv7Ng-cmpo50JlfU-KtTgPtj5hSuxPShKws-xhJ1rmLRYxlQ/exec', // Your GAS Web App URL
+            rewards: [
+                { name: 'SAMSUNG 4K Smart TV', points: 1370000, image: '' },
+                { name: 'OPPO Reno13 F 5G Smartphone', points: 1030000, image: '' },
+                { name: 'Hisense 3 Star Aircond', points: 690000, image: '' },
+                { name: 'REZO VENTUS Ceiling Fan', points: 159000, image: '' },
+                { name: 'Pensonic 16" Stand Fan', points: 147000, image: '' },
+                { name: 'UGREEN Fast Charger (3 Type-C,1 USB)', points: 199000, image: '' },
+                { name: 'UGREEN Fast Charging Cable (Type C to USB)', points: 32990, image: '' },
+                { name: 'Colgate Premier Clean Toothbrush (1pcs)', points: 2400, image: '' },
+                { name: 'Colgate Triple Action Toothpaste Mint (200g)', points: 7500, image: '' },
+                { name: 'NESTLE NESTUM 3in1 Oats (14 Packets x 30g)', points: 13000, image: '' },
+                { name: 'NESCAFÉ 3in1 Rich (25 Sticks x 18g)', points: 17000, image: '' },
+                { name: 'NESTLE MILO 3in1 (26 Sticks x 33g)', points: 27000, image: '' },
+                { name: 'MAGGI Hot Cup Curry (6 cups x 58g)', points: 14000, image: '' },
+                { name: 'HUP SENG Cream Biscuit (428g)', points: 6000, image: '' }
+            ]
+        };
+
+        // Global variables
+        let currentUser = '';
+        let remainingPoints = 0;
+        let returnUrl = '';
+        let redeemCooldown = false;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            currentUser = urlParams.get('name') || 'Guest';
+            remainingPoints = parseInt(urlParams.get('points') || '0');
+            returnUrl = urlParams.get('returnUrl') || '';
+
+            // Set user info
+            document.getElementById('currentUser').textContent = currentUser;
+            document.getElementById('currentPoints').textContent = remainingPoints.toLocaleString();
+            document.getElementById('redeemName').value = currentUser;
+            document.getElementById('userName').value = currentUser;
+
+            // Load rewards
+            loadRewards();
+
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loading').style.display = 'none';
+            }, 1000);
+        });
+
+        // Load rewards to the grid
+        function loadRewards() {
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+
+            CONFIG.rewards.forEach((reward, index) => {
+                const card = document.createElement('div');
+                card.className = 'reward-card';
+                card.innerHTML = `
+                    <div class="points-required">${reward.points.toLocaleString()} pts</div>
+                    <div class="reward-image">
+                        <img src="${reward.image}" alt="${reward.name}">
+                    </div>
+                    <div class="reward-name">${reward.name}</div>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn minus" onclick="changeQuantity(${index}, -1)" disabled>-</button>
+                        <input type="number" class="quantity-input" id="qty-${index}" value="0" min="0" max="10" readonly>
+                        <button class="quantity-btn plus" onclick="changeQuantity(${index}, 1)">+</button>
+                    </div>
+                    <div class="point-required">Point Required: <span id="req-${index}">0</span></div>
+                    <button class="redeem-btn" id="btn-${index}" onclick="initiateRedeem(${index})" disabled>Redeem</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Change quantity for a reward
+        function changeQuantity(index, delta) {
+            const input = document.getElementById(`qty-${index}`);
+            let current = parseInt(input.value);
+            let newValue = current + delta;
+            
+            if (newValue >= 0 && newValue <= 10) {
+                input.value = newValue;
+                
+                // Update minus button
+                const minusBtn = input.parentElement.querySelector('.minus');
+                minusBtn.disabled = newValue === 0;
+                
+                // Update required points
+                const requiredPoints = newValue * CONFIG.rewards[index].points;
+                document.getElementById(`req-${index}`).textContent = requiredPoints.toLocaleString();
+                
+                // Update redeem button state
+                const redeemBtn = document.getElementById(`btn-${index}`);
+                if (requiredPoints > 0 && requiredPoints <= remainingPoints) {
+                    redeemBtn.disabled = false;
+                    redeemBtn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                } else {
+                    redeemBtn.disabled = true;
+                    redeemBtn.style.background = '#95a5a6';
+                }
+            }
+        }
+
+        // Initiate redemption process
+        function initiateRedeem(index) {
+            if (redeemCooldown) {
+                alert('Please wait 15 seconds before another redemption.');
+                return;
+            }
+
+            const quantity = parseInt(document.getElementById(`qty-${index}`).value);
+            const reward = CONFIG.rewards[index];
+            const requiredPoints = quantity * reward.points;
+
+            // Show confirmation modal
+            document.getElementById('confirmItem').textContent = `${quantity} x ${reward.name}`;
+            document.getElementById('confirmPoints').textContent = requiredPoints.toLocaleString();
+            
+            // Store data in modal for confirmation
+            document.getElementById('confirmationModal').dataset.rewardIndex = index;
+            document.getElementById('confirmationModal').dataset.quantity = quantity;
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        // Confirm redemption
+        function confirmRedeem() {
+            const modal = document.getElementById('confirmationModal');
+            const index = parseInt(modal.dataset.rewardIndex);
+            const quantity = parseInt(modal.dataset.quantity);
+            const reward = CONFIG.rewards[index];
+            const requiredPoints = quantity * reward.points;
+
+            // Update form values
+            document.getElementById('redeemReward').value = reward.name;
+            document.getElementById('redeemQuantity').value = quantity;
+            document.getElementById('redeemPoints').value = requiredPoints;
+
+            // Submit to GAS
+            const form = document.getElementById('redeemForm');
+            if (CONFIG.gasWebAppUrl !== 'https://script.google.com/macros/s/AKfycby27kfUz5aafx4_gdgQ64sv7Ng-cmpo50JlfU-KtTgPtj5hSuxPShKws-xhJ1rmLRYxlQ/exec') {
+                form.action = CONFIG.gasWebAppUrl;
+                form.submit();
+            } else {
+                alert('Please set your GAS Web App URL in the CONFIG object');
+            }
+
+            // Start cooldown
+            startCooldown();
+            closeModal();
+        }
+
+        // Start cooldown period
+        function startCooldown() {
+            redeemCooldown = true;
+            
+            // Disable all redeem buttons
+            document.querySelectorAll('.redeem-btn').forEach(btn => {
+                btn.disabled = true;
+                btn.textContent = 'Please wait 15s';
+                btn.style.background = '#95a5a6';
+            });
+
+            // Enable after 15 seconds
+            setTimeout(() => {
+                redeemCooldown = false;
+                document.querySelectorAll('.redeem-btn').forEach(btn => {
+                    const index = parseInt(btn.id.split('-')[1]);
+                    const quantity = parseInt(document.getElementById(`qty-${index}`).value);
+                    const reward = CONFIG.rewards[index];
+                    const requiredPoints = quantity * reward.points;
+                    
+                    if (quantity > 0 && requiredPoints <= remainingPoints) {
+                        btn.disabled = false;
+                        btn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                    }
+                    btn.textContent = 'Redeem';
+                });
+            }, 15000);
+        }
+
+        // Go back to profile page
+        function goBack() {
+            if (returnUrl) {
+                window.location.href = returnUrl;
+            } else {
+                window.history.back();
+            }
+        }
+
+        // Handle GAS response
+        function handleGASResponse() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const message = urlParams.get('message');
+            const newPoints = urlParams.get('remainingPoints');
+
+            if (success === 'true' && newPoints) {
+                remainingPoints = parseInt(newPoints);
+                document.getElementById('currentPoints').textContent = remainingPoints.toLocaleString();
+                alert('Redemption successful!');
+                
+                // Update all button states
+                CONFIG.rewards.forEach((reward, index) => {
+                    const quantity = parseInt(document.getElementById(`qty-${index}`).value);
+                    const requiredPoints = quantity * reward.points;
+                    const btn = document.getElementById(`btn-${index}`);
+                    
+                    if (quantity > 0 && requiredPoints <= remainingPoints) {
+                        btn.disabled = false;
+                        btn.style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
+                    } else {
+                        btn.disabled = true;
+                        btn.style.background = '#95a5a6';
+                    }
+                });
+            } else if (message) {
+                alert(message);
+            }
+            
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname + window.location.search.split('?')[0]);
+        }
+
+        // Call response handler
+        handleGASResponse();
+    </script>
+</body>
+</html>
